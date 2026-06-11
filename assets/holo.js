@@ -1,286 +1,312 @@
-/* Flash-AI.pro — signature hologram v2
-   Glowing holographic chip with flowing data pulses, scan plane, flicker,
-   projection cone — morphing into a neural brain. */
+/* Flash-AI.pro — hologram v3 "Subjugate"
+   A legible silicon chip → swirl-wave morph → anatomical neural brain → back. Loop.
+   Per-particle gradient (violet→cyan), staggered morph wave, phase-aware rotation,
+   synapse flashes in brain phase, bus pulses in chip phase. */
 (function () {
   const canvas = document.getElementById('holo');
   if (!canvas || !window.THREE) return;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const label = document.querySelector('.holo-label');
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 100);
-  camera.position.set(0, 0.7, 7.4);
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+  camera.position.set(0, 0.15, 7.0);
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  const N = 3200;   // particles
-  const L = 1300;   // line segments
-  const P = 220;    // data pulses
+  const N = 3600, L = 1500, P = 260;
+  const VIOLET = new THREE.Color('#7C5CFF'), CYAN = new THREE.Color('#36D6FF'), MINT = new THREE.Color('#5CFFC9');
 
-  // ---- soft glow sprite (canvas texture) ----
-  function glowTexture(inner, outer) {
+  function glowTexture(inner, mid) {
     const c = document.createElement('canvas'); c.width = c.height = 64;
     const x = c.getContext('2d');
     const g = x.createRadialGradient(32,32,0,32,32,32);
-    g.addColorStop(0, inner); g.addColorStop(0.35, outer); g.addColorStop(1, 'rgba(0,0,0,0)');
+    g.addColorStop(0, inner); g.addColorStop(0.3, mid); g.addColorStop(1, 'rgba(0,0,0,0)');
     x.fillStyle = g; x.fillRect(0,0,64,64);
-    const t = new THREE.CanvasTexture(c); return t;
+    return new THREE.CanvasTexture(c);
   }
-  const cyanTex  = glowTexture('rgba(220,255,255,1)', 'rgba(89,227,255,.55)');
-  const brassTex = glowTexture('rgba(255,245,215,1)', 'rgba(232,196,120,.6)');
+  const dotTex = glowTexture('rgba(255,255,255,1)', 'rgba(160,200,255,.6)');
 
-  // ---------- SHAPE A : the chip ----------
-  const chipPos = new Float32Array(N * 3);
-  (function buildChip() {
-    let i = 0;
-    const put = (x,y,z) => { chipPos[i*3]=x; chipPos[i*3+1]=y; chipPos[i*3+2]=z; i++; };
-    const S = 2.1;
-    const border = Math.floor(N * 0.20);
-    for (let k = 0; k < border; k++) {
-      const t = (k / border) * 4, side = Math.floor(t), f = t - side;
-      let x, y;
-      if (side === 0) { x = -S + 2*S*f; y =  S; }
-      else if (side === 1) { x =  S; y =  S - 2*S*f; }
-      else if (side === 2) { x =  S - 2*S*f; y = -S; }
-      else { x = -S; y = -S + 2*S*f; }
-      put(x, y, (Math.random()-0.5)*0.06);
+  /* ============ SHAPE A — A CHIP YOU CAN READ ============
+     Square die, double frame, regular bus grid (8x8 lanes), glowing core block,
+     and pin rows on all four edges. Mostly flat: reads as silicon. */
+  const chipPos = new Float32Array(N*3);
+  (function chip() {
+    let i = 0; const put=(x,y,z)=>{ chipPos[i*3]=x; chipPos[i*3+1]=y; chipPos[i*3+2]=z; i++; };
+    const S = 2.0;
+    // outer frame — crisp continuous edge
+    const fr = Math.floor(N*0.16);
+    for (let k=0;k<fr;k++){ const t=(k/fr)*4, s=Math.floor(t), f=t-s; let x,y;
+      if(s===0){x=-S+2*S*f;y=S;} else if(s===1){x=S;y=S-2*S*f;} else if(s===2){x=S-2*S*f;y=-S;} else {x=-S;y=-S+2*S*f;}
+      put(x,y,0); }
+    // inner frame
+    const fr2 = Math.floor(N*0.10), S2=S*0.62;
+    for (let k=0;k<fr2;k++){ const t=(k/fr2)*4, s=Math.floor(t), f=t-s; let x,y;
+      if(s===0){x=-S2+2*S2*f;y=S2;} else if(s===1){x=S2;y=S2-2*S2*f;} else if(s===2){x=S2-2*S2*f;y=-S2;} else {x=-S2;y=-S2+2*S2*f;}
+      put(x,y,0.04); }
+    // regular bus grid: 7 horizontal + 7 vertical lanes between frames
+    const lanes = 7, perLane = Math.floor((N*0.34)/(lanes*2));
+    for (let ln=0; ln<lanes; ln++) {
+      const c = (ln-(lanes-1)/2)*(S2*2/ (lanes)) ;
+      for (let k=0;k<perLane;k++){
+        const t=(k/perLane*2-1)*S*0.97;
+        put(t, c, 0.01);            // horizontal lane
+        put(c, t, 0.02);            // vertical lane
+      }
     }
-    // double inner frame
-    const frame2 = Math.floor(N * 0.08);
-    for (let k = 0; k < frame2; k++) {
-      const t = (k / frame2) * 4, side = Math.floor(t), f = t - side, S2 = S*0.55;
-      let x, y;
-      if (side === 0) { x = -S2 + 2*S2*f; y =  S2; }
-      else if (side === 1) { x =  S2; y =  S2 - 2*S2*f; }
-      else if (side === 2) { x =  S2 - 2*S2*f; y = -S2; }
-      else { x = -S2; y = -S2 + 2*S2*f; }
-      put(x, y, 0.1);
-    }
-    const traces = Math.floor(N * 0.44);
-    for (let k = 0; k < traces; k++) {
-      const horiz = Math.random() > 0.5;
-      const lane = (Math.floor(Math.random()*11) - 5) * (S/5.4);
-      const t = (Math.random()*2 - 1) * S * 0.92;
-      put(horiz ? t : lane, horiz ? lane : t, (Math.random()-0.5)*0.05);
-    }
-    const core = Math.floor(N * 0.12);
-    for (let k = 0; k < core; k++)
-      put((Math.random()-0.5)*0.95, (Math.random()-0.5)*0.95, 0.06+(Math.random())*0.18);
+    // core block — dense glowing square in centre
+    const core = Math.floor(N*0.14);
+    for (let k=0;k<core;k++) put((Math.random()-0.5)*0.8, (Math.random()-0.5)*0.8, 0.05+Math.random()*0.1);
+    // pins — short regular ticks on all edges
+    const pinsPerSide = 12;
     while (i < N) {
-      const side = Math.floor(Math.random()*4);
-      const a = (Math.floor(Math.random()*16)/15 * 2 - 1) * S * 0.9;
-      const out = S + 0.16 + Math.random()*0.34;
-      if (side===0) put(a, out, 0); else if (side===1) put(a,-out,0);
-      else if (side===2) put(out, a, 0); else put(-out, a, 0);
+      const side=(i%4); const idx=Math.floor(Math.random()*pinsPerSide);
+      const a = (idx/(pinsPerSide-1)*2-1)*S*0.86;
+      const ext = S + 0.12 + Math.random()*0.22;
+      if(side===0) put(a,ext,0); else if(side===1) put(a,-ext,0);
+      else if(side===2) put(ext,a,0); else put(-ext,a,0);
     }
   })();
 
-  // ---------- SHAPE B : the brain ----------
-  const brainPos = new Float32Array(N * 3);
-  (function buildBrain() {
-    for (let k = 0; k < N; k++) {
-      const u = Math.random()*Math.PI*2, v = Math.acos(2*Math.random()-1);
-      const r = 0.84 + Math.pow(Math.random(), 3) * 0.16;
-      let x = r * Math.sin(v) * Math.cos(u) * 2.0;
-      let y = r * Math.cos(v) * 1.45;
-      let z = r * Math.sin(v) * Math.sin(u) * 1.6;
-      x += (x > 0 ? 0.17 : -0.17);
-      const w = Math.sin(x*5.2)*Math.cos(y*4.6)*Math.sin(z*5.8) * 0.12;
-      x += w; y += w*0.8; z += w;
-      if (y < -0.9) y = -0.9 - (y+0.9)*0.3;
-      brainPos[k*3]=x; brainPos[k*3+1]=y+0.15; brainPos[k*3+2]=z;
+  /* ============ SHAPE B — A BRAIN YOU CAN READ ============
+     Two hemispheres with a clear midline fissure, cortical folds,
+     cerebellum at lower back, brainstem hint. */
+  const brainPos = new Float32Array(N*3);
+  (function brain() {
+    let i = 0;
+    const cer = Math.floor(N*0.12), stem = Math.floor(N*0.03), main = N - cer - stem;
+    for (let k=0;k<main;k++){
+      const u=Math.random()*Math.PI*2, v=Math.acos(2*Math.random()-1);
+      const r=0.88+Math.pow(Math.random(),4)*0.12;
+      let x=r*Math.sin(v)*Math.cos(u)*1.85;
+      let y=r*Math.cos(v)*1.3;
+      let z=r*Math.sin(v)*Math.sin(u)*1.5;
+      // deep midline fissure
+      const gap = 0.22;
+      x += x>=0 ? gap : -gap;
+      if (Math.abs(x) < gap*1.4 && y > -0.2) { x = (x>=0?1:-1)*(gap*1.4); }
+      // cortical folds — layered noise
+      const w = Math.sin(x*4.8)*Math.cos(y*5.4)*Math.sin(z*5.0)*0.13
+              + Math.sin(x*9.5+1.3)*Math.cos(z*8.7)*0.05;
+      x+=w; y+=w*0.85; z+=w;
+      // frontal/occipital shaping
+      if (z>0.9) y -= (z-0.9)*0.25;
+      if (y<-0.75) y = -0.75-(y+0.75)*0.25;
+      brainPos[i*3]=x; brainPos[i*3+1]=y+0.28; brainPos[i*3+2]=z; i++;
+    }
+    // cerebellum — smaller ridged sphere lower-back
+    for (let k=0;k<cer;k++){
+      const u=Math.random()*Math.PI*2, v=Math.acos(2*Math.random()-1);
+      const r=0.92+Math.random()*0.08;
+      let x=r*Math.sin(v)*Math.cos(u)*0.78;
+      let y=r*Math.cos(v)*0.5;
+      let z=r*Math.sin(v)*Math.sin(u)*0.62;
+      y += Math.sin(x*16)*0.035; // fine horizontal ridges
+      brainPos[i*3]=x; brainPos[i*3+1]=y-0.72; brainPos[i*3+2]=z-1.05; i++;
+    }
+    // brainstem
+    for (let k=0;k<stem;k++){
+      const a=Math.random()*Math.PI*2, rr=0.16*Math.sqrt(Math.random());
+      brainPos[i*3]=Math.cos(a)*rr; brainPos[i*3+1]=-0.85-Math.random()*0.5; brainPos[i*3+2]=-0.45+Math.sin(a)*rr; i++;
     }
   })();
 
-  // ---------- main particles (2 layers: sharp + halo) ----------
+  /* per-particle morph stagger (wave sweeps left→right) + swirl seed */
+  const delay = new Float32Array(N), swirl = new Float32Array(N);
+  for (let k=0;k<N;k++){ delay[k] = (chipPos[k*3]+2.4)/4.8 * 0.55; swirl[k] = Math.random()*Math.PI*2; }
+
+  /* per-particle colors — violet→cyan by height, mint sparkles */
+  const colors = new Float32Array(N*3);
+  const tmp = new THREE.Color();
+  for (let k=0;k<N;k++){
+    const t = Math.min(1, Math.max(0, (chipPos[k*3+1]+2.3)/4.6));
+    tmp.copy(VIOLET).lerp(CYAN, t);
+    if (Math.random()<0.06) tmp.copy(MINT);
+    colors[k*3]=tmp.r; colors[k*3+1]=tmp.g; colors[k*3+2]=tmp.b;
+  }
+
   const pos = new Float32Array(chipPos);
   const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors,3));
 
-  const pSharp = new THREE.Points(geo, new THREE.PointsMaterial({
-    map: cyanTex, color: 0xB8F4FF, size: 0.085, transparent: true, opacity: 0.95,
-    blending: THREE.AdditiveBlending, depthWrite: false
-  }));
-  const pHalo = new THREE.Points(geo, new THREE.PointsMaterial({
-    map: cyanTex, color: 0x2FA8CC, size: 0.30, transparent: true, opacity: 0.20,
-    blending: THREE.AdditiveBlending, depthWrite: false
-  }));
   const holoGroup = new THREE.Group();
-  holoGroup.add(pHalo); holoGroup.add(pSharp);
+  const pSharp = new THREE.Points(geo, new THREE.PointsMaterial({
+    map:dotTex, vertexColors:true, size:0.075, transparent:true, opacity:.95,
+    blending:THREE.AdditiveBlending, depthWrite:false }));
+  const pHalo = new THREE.Points(geo, new THREE.PointsMaterial({
+    map:dotTex, vertexColors:true, size:0.26, transparent:true, opacity:.14,
+    blending:THREE.AdditiveBlending, depthWrite:false }));
+  holoGroup.add(pHalo, pSharp);
 
-  // ---------- connecting lines ----------
-  const linePos = new Float32Array(L * 6);
+  /* connection lines */
+  const linePos = new Float32Array(L*6);
   const lGeo = new THREE.BufferGeometry();
-  lGeo.setAttribute('position', new THREE.BufferAttribute(linePos, 3));
+  lGeo.setAttribute('position', new THREE.BufferAttribute(linePos,3));
   const lines = new THREE.LineSegments(lGeo, new THREE.LineBasicMaterial({
-    color: 0x59E3FF, transparent: true, opacity: 0.13,
-    blending: THREE.AdditiveBlending, depthWrite: false
-  }));
+    color:0x6FA8FF, transparent:true, opacity:.12, blending:THREE.AdditiveBlending, depthWrite:false }));
   holoGroup.add(lines);
 
-  const pairs = new Int32Array(L * 2);
-  function samplePairs(src, maxD) {
-    for (let k = 0; k < L; k++) {
-      let a = (Math.random()*N)|0, best = -1, bd = maxD*maxD;
-      for (let t = 0; t < 14; t++) {
-        const b = (Math.random()*N)|0;
-        const dx = src[a*3]-src[b*3], dy = src[a*3+1]-src[b*3+1], dz = src[a*3+2]-src[b*3+2];
-        const d = dx*dx+dy*dy+dz*dz;
-        if (d > 0.0004 && d < bd) { bd = d; best = b; }
+  const pairs = new Int32Array(L*2);
+  function samplePairs(src, maxD){
+    for (let k=0;k<L;k++){
+      let a=(Math.random()*N)|0, best=-1, bd=maxD*maxD;
+      for (let t=0;t<16;t++){
+        const b=(Math.random()*N)|0;
+        const dx=src[a*3]-src[b*3], dy=src[a*3+1]-src[b*3+1], dz=src[a*3+2]-src[b*3+2];
+        const d=dx*dx+dy*dy+dz*dz;
+        if (d>0.0004 && d<bd){ bd=d; best=b; }
       }
-      pairs[k*2] = a; pairs[k*2+1] = best < 0 ? a : best;
+      pairs[k*2]=a; pairs[k*2+1]=best<0?a:best;
     }
   }
-  samplePairs(chipPos, 0.55);
+  samplePairs(chipPos, 0.5);
 
-  // ---------- brass data pulses ----------
+  /* data pulses */
   const pulseGeo = new THREE.BufferGeometry();
-  const pulsePos = new Float32Array(P * 3);
-  pulseGeo.setAttribute('position', new THREE.BufferAttribute(pulsePos, 3));
+  const pulsePos = new Float32Array(P*3);
+  pulseGeo.setAttribute('position', new THREE.BufferAttribute(pulsePos,3));
   const pulses = new THREE.Points(pulseGeo, new THREE.PointsMaterial({
-    map: brassTex, color: 0xF2D9A0, size: 0.16, transparent: true, opacity: 1,
-    blending: THREE.AdditiveBlending, depthWrite: false
-  }));
+    map:dotTex, color:0xCFF6FF, size:0.13, transparent:true, opacity:1,
+    blending:THREE.AdditiveBlending, depthWrite:false }));
   holoGroup.add(pulses);
-  const pulseLane = new Int32Array(P), pulseT = new Float32Array(P), pulseV = new Float32Array(P);
-  for (let k = 0; k < P; k++) { pulseLane[k]=(Math.random()*L)|0; pulseT[k]=Math.random(); pulseV[k]=0.35+Math.random()*1.1; }
+  const pl=new Int32Array(P), pt=new Float32Array(P), pv=new Float32Array(P);
+  for (let k=0;k<P;k++){ pl[k]=(Math.random()*L)|0; pt[k]=Math.random(); pv[k]=0.4+Math.random()*1.2; }
 
-  // ---------- scan plane (hologram sweep) ----------
-  const scan = new THREE.Mesh(
-    new THREE.PlaneGeometry(6.2, 0.025),
-    new THREE.MeshBasicMaterial({ color: 0x59E3FF, transparent: true, opacity: 0.35,
-      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
-  );
-  holoGroup.add(scan);
-
-  // ---------- projection cone + emitter base ----------
-  const cone = new THREE.Mesh(
-    new THREE.ConeGeometry(2.9, 4.6, 48, 1, true),
-    new THREE.MeshBasicMaterial({ color: 0x2FA8CC, transparent: true, opacity: 0.045,
-      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
-  );
-  cone.position.y = -2.0; cone.rotation.x = Math.PI;
-  scene.add(cone);
-  const baseRing = new THREE.Mesh(
-    new THREE.RingGeometry(0.45, 0.75, 64),
-    new THREE.MeshBasicMaterial({ color: 0x59E3FF, transparent: true, opacity: 0.5,
-      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
-  );
-  baseRing.rotation.x = -Math.PI/2; baseRing.position.y = -4.25;
-  scene.add(baseRing);
-  const baseRing2 = baseRing.clone();
-  baseRing2.scale.set(1.5,1.5,1); baseRing2.material = baseRing.material.clone();
-  baseRing2.material.opacity = 0.18;
-  scene.add(baseRing2);
+  /* synapse flashes (brain phase) — brief bright bursts */
+  const F = 26;
+  const flashGeo = new THREE.BufferGeometry();
+  const flashPos = new Float32Array(F*3);
+  flashGeo.setAttribute('position', new THREE.BufferAttribute(flashPos,3));
+  const flashMat = new THREE.PointsMaterial({ map:dotTex, color:0xFFFFFF, size:0.34,
+    transparent:true, opacity:0, blending:THREE.AdditiveBlending, depthWrite:false });
+  holoGroup.add(new THREE.Points(flashGeo, flashMat));
+  const flashT = new Float32Array(F);
+  for (let k=0;k<F;k++){ flashT[k]=Math.random()*2; resetFlash(k); }
+  function resetFlash(k){ const p=(Math.random()*N)|0;
+    flashPos[k*3]=brainPos[p*3]; flashPos[k*3+1]=brainPos[p*3+1]; flashPos[k*3+2]=brainPos[p*3+2]; }
 
   scene.add(holoGroup);
 
-  // ---------- morph + animation ----------
-  const CYCLE = 20;
-  const ease = t => t<0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+  /* ============ TIMELINE ============
+     0–5s   chip (faces camera, slow tilt)     label: SILICON
+     5–9s   morph wave → brain (swirl transit) label: TRANSFORMING
+     9–14s  brain (3/4 rotation, synapses)     label: INTELLIGENCE
+     14–18s morph back                          loop */
+  const CH=5, MO=4, BR=5, MB=4, CYCLE=CH+MO+BR+MB;
+  const ease = t => t<0 ? 0 : t>1 ? 1 : (t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2);
   let lastShape = 0;
+  const labels = (label && label.dataset) ? {
+    chip: label.dataset.chip || 'SILICON', morph: label.dataset.morph || 'TRANSFORMING',
+    brain: label.dataset.brain || 'INTELLIGENCE' } : null;
+  let lastLabel = '';
 
-  // parallax (mouse / gyro)
-  let px = 0, py = 0, tx = 0, ty = 0;
-  window.addEventListener('pointermove', e => {
-    tx = (e.clientX / window.innerWidth - 0.5) * 0.5;
-    ty = (e.clientY / window.innerHeight - 0.5) * 0.3;
-  }, { passive: true });
-  window.addEventListener('deviceorientation', e => {
-    if (e.gamma !== null) { tx = (e.gamma/45) * 0.35; ty = (e.beta/90 - 0.4) * 0.25; }
-  }, { passive: true });
+  let px=0, py=0, tx=0, ty=0;
+  window.addEventListener('pointermove', e=>{
+    tx=(e.clientX/window.innerWidth-0.5)*0.45; ty=(e.clientY/window.innerHeight-0.5)*0.3; },{passive:true});
+  window.addEventListener('deviceorientation', e=>{
+    if(e.gamma!==null){ tx=(e.gamma/45)*0.3; ty=(e.beta/90-0.4)*0.2; } },{passive:true});
 
-  function resize() {
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    if (canvas.width !== w || canvas.height !== h) {
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h; camera.updateProjectionMatrix();
-      // shift hologram right on desktop, center on mobile
-      holoGroup.position.x = w > 880 ? 1.6 : 0;
-      cone.position.x = baseRing.position.x = baseRing2.position.x = holoGroup.position.x;
+  function resize(){
+    const w=canvas.clientWidth, h=canvas.clientHeight;
+    if (canvas.width!==w || canvas.height!==h){
+      renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+      const sc = Math.min(w,h)/520; holoGroup.scale.setScalar(Math.max(0.72, Math.min(1.15, sc)));
     }
   }
 
-  const t0 = performance.now();
-  function frame(now) {
+  function setLabel(txt){ if(label && txt!==lastLabel){ label.style.opacity=0;
+    setTimeout(()=>{ label.textContent=txt; label.style.opacity=1; },300); lastLabel=txt; } }
+
+  const t0=performance.now();
+  function frame(now){
     resize();
-    const t = (now - t0) / 1000;
-    const c = (t % CYCLE) / CYCLE * 4;
-    let m;
-    if (c < 1) m = 0;
-    else if (c < 2) m = ease(c - 1);
-    else if (c < 3) m = 1;
-    else m = 1 - ease(c - 3);
+    const t=(now-t0)/1000, c=t%CYCLE;
+    let gm, phase; // gm = global morph 0 chip → 1 brain
+    if (c<CH){ gm=0; phase='chip'; }
+    else if (c<CH+MO){ gm=(c-CH)/MO; phase='morph'; }
+    else if (c<CH+MO+BR){ gm=1; phase='brain'; }
+    else { gm=1-(c-CH-MO-BR)/MB; phase='morph'; }
 
-    const shape = m > 0.5 ? 1 : 0;
-    if (shape !== lastShape) {
-      samplePairs(shape ? brainPos : chipPos, shape ? 0.5 : 0.55);
-      lastShape = shape;
+    if (labels) setLabel(phase==='chip'?labels.chip : phase==='brain'?labels.brain : labels.morph);
+
+    const shape = gm>0.5?1:0;
+    if (shape!==lastShape){ samplePairs(shape?brainPos:chipPos, shape?0.46:0.5); lastShape=shape; }
+
+    const breathe = 1+Math.sin(t*0.9)*0.012;
+    for (let k=0;k<N;k++){
+      const i3=k*3;
+      // staggered per-particle morph: wave + ease
+      let m = ease((gm - delay[k]*(gm<0.5?1:-1)*0 + 0)*1 ); // base
+      m = ease( (gm*1.4) - delay[k]*0.7 );
+      if (c>=CH+MO+BR) m = ease( (gm*1.4) - (0.55-delay[k])*0.7 ); // reverse wave on way back
+      // swirl during transit — particles arc outward mid-morph
+      const arc = Math.sin(Math.PI*Math.min(1,Math.max(0,m))) * (phase==='morph'?1:0);
+      const sa = swirl[k] + t*0.6;
+      const ox = Math.cos(sa)*arc*0.5, oy = Math.sin(sa*1.3)*arc*0.35, oz = Math.sin(sa)*arc*0.5;
+      pos[i3]  =(chipPos[i3]  *(1-m)+brainPos[i3]  *m + ox)*breathe;
+      pos[i3+1]=(chipPos[i3+1]*(1-m)+brainPos[i3+1]*m + oy)*breathe;
+      pos[i3+2]=(chipPos[i3+2]*(1-m)+brainPos[i3+2]*m + oz)*breathe;
     }
+    geo.attributes.position.needsUpdate=true;
 
-    const breathe = 1 + Math.sin(t * 0.8) * 0.014;
-    for (let k = 0; k < N; k++) {
-      const i3 = k*3;
-      pos[i3]   = (chipPos[i3]  *(1-m) + brainPos[i3]  *m) * breathe;
-      pos[i3+1] = (chipPos[i3+1]*(1-m) + brainPos[i3+1]*m) * breathe;
-      pos[i3+2] = (chipPos[i3+2]*(1-m) + brainPos[i3+2]*m) * breathe;
-    }
-    geo.attributes.position.needsUpdate = true;
-
-    for (let k = 0; k < L; k++) {
-      const a = pairs[k*2]*3, b = pairs[k*2+1]*3, o = k*6;
+    for (let k=0;k<L;k++){
+      const a=pairs[k*2]*3, b=pairs[k*2+1]*3, o=k*6;
       linePos[o]=pos[a]; linePos[o+1]=pos[a+1]; linePos[o+2]=pos[a+2];
       linePos[o+3]=pos[b]; linePos[o+4]=pos[b+1]; linePos[o+5]=pos[b+2];
     }
-    lGeo.attributes.position.needsUpdate = true;
+    lGeo.attributes.position.needsUpdate=true;
 
-    for (let k = 0; k < P; k++) {
-      pulseT[k] += pulseV[k] * 0.016;
-      if (pulseT[k] > 1) { pulseT[k] = 0; pulseLane[k] = (Math.random()*L)|0; }
-      const ln = pulseLane[k], a = pairs[ln*2]*3, b = pairs[ln*2+1]*3, f = pulseT[k];
-      pulsePos[k*3]  = pos[a]  *(1-f) + pos[b]  *f;
-      pulsePos[k*3+1]= pos[a+1]*(1-f) + pos[b+1]*f;
-      pulsePos[k*3+2]= pos[a+2]*(1-f) + pos[b+2]*f;
+    for (let k=0;k<P;k++){
+      pt[k]+=pv[k]*0.016;
+      if (pt[k]>1){ pt[k]=0; pl[k]=(Math.random()*L)|0; }
+      const ln=pl[k], a=pairs[ln*2]*3, b=pairs[ln*2+1]*3, f=pt[k];
+      pulsePos[k*3]  =pos[a]  *(1-f)+pos[b]  *f;
+      pulsePos[k*3+1]=pos[a+1]*(1-f)+pos[b+1]*f;
+      pulsePos[k*3+2]=pos[a+2]*(1-f)+pos[b+2]*f;
     }
-    pulseGeo.attributes.position.needsUpdate = true;
+    pulseGeo.attributes.position.needsUpdate=true;
 
-    // hologram flicker — subtle, irregular
-    const flick = 0.92 + Math.sin(t*23.7)*0.02 + Math.sin(t*7.3)*0.03 + (Math.random()<0.012 ? -0.25 : 0);
-    pSharp.material.opacity = 0.95 * flick;
-    pHalo.material.opacity  = 0.20 * flick;
-    lines.material.opacity  = 0.13 * flick;
+    // synapse flashes only in brain phase
+    let fo=0;
+    if (phase==='brain'){
+      for (let k=0;k<F;k++){
+        flashT[k]-=0.016;
+        if (flashT[k]<=0){ flashT[k]=0.5+Math.random()*2.5; resetFlash(k); }
+      }
+      flashGeo.attributes.position.needsUpdate=true;
+      fo=0.7;
+    }
+    flashMat.opacity += (fo-flashMat.opacity)*0.08;
+    flashMat.size = 0.2+Math.abs(Math.sin(t*6))*0.18;
 
-    // scan plane sweep
-    const sy = ((t*0.55) % 2.4) - 1.2;
-    scan.position.y = sy * 2.2;
-    scan.material.opacity = 0.30 * (1 - Math.abs(sy/1.2)) * flick;
+    /* phase-aware rotation:
+       chip — flat, facing camera with gentle tilt so the grid reads;
+       brain — 3/4 view, slow continuous turn */
+    px+=(tx-px)*0.05; py+=(ty-py)*0.05;
+    const chipRotX=0.45, chipRotY=Math.sin(t*0.4)*0.18;
+    const brainRotX=0.12, brainRotY=t*0.4;
+    const rl = ease(gm);
+    holoGroup.rotation.x = chipRotX*(1-rl)+brainRotX*rl + py;
+    holoGroup.rotation.y = chipRotY*(1-rl)+brainRotY*rl + px;
 
-    // base rings pulse
-    baseRing.material.opacity = 0.35 + Math.sin(t*2.2)*0.15;
-    baseRing2.scale.setScalar(1.4 + Math.sin(t*2.2)*0.12);
+    // soft flicker — restrained
+    const flick = 0.96 + Math.sin(t*19)*0.015 + (Math.random()<0.006?-0.12:0);
+    pSharp.material.opacity=0.95*flick; pHalo.material.opacity=0.14*flick; lines.material.opacity=0.12*flick;
 
-    // parallax easing + drift rotation
-    px += (tx - px) * 0.04; py += (ty - py) * 0.04;
-    holoGroup.rotation.y = t * 0.17 + px;
-    holoGroup.rotation.x = 0.30 + Math.sin(t*0.3)*0.04 + py;
-
-    renderer.render(scene, camera);
+    renderer.render(scene,camera);
     if (!reduced) requestAnimationFrame(frame);
   }
 
-  if (reduced) {
-    for (let k = 0; k < N*3; k++) pos[k] = brainPos[k];
-    geo.attributes.position.needsUpdate = true;
-    samplePairs(brainPos, 0.5);
-    holoGroup.rotation.set(0.3, 0.6, 0);
-    resize(); renderer.render(scene, camera);
-  } else {
-    requestAnimationFrame(frame);
-  }
+  if (reduced){
+    for (let k=0;k<N*3;k++) pos[k]=brainPos[k];
+    geo.attributes.position.needsUpdate=true; samplePairs(brainPos,0.46);
+    holoGroup.rotation.set(0.12,0.7,0); resize(); renderer.render(scene,camera);
+    if (label) label.textContent = label.dataset ? (label.dataset.brain||'INTELLIGENCE') : '';
+  } else requestAnimationFrame(frame);
 
   window.addEventListener('resize', resize);
-
-  const io = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-  }), { threshold: 0.12 });
-  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  const io=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }}),{threshold:.1});
+  document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 })();
