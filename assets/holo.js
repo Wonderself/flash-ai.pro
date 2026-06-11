@@ -14,7 +14,7 @@
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  const N = 3600, L = 1500, P = 260;
+  const N = 5200, L = 2100, P = 300;
   const VIOLET = new THREE.Color('#7C5CFF'), CYAN = new THREE.Color('#36D6FF'), MINT = new THREE.Color('#5CFFC9');
 
   function glowTexture(inner, mid) {
@@ -68,46 +68,55 @@
     }
   })();
 
-  /* ============ SHAPE B — A BRAIN YOU CAN READ ============
-     Two hemispheres with a clear midline fissure, cortical folds,
-     cerebellum at lower back, brainstem hint. */
+  /* ============ SHAPE B — AN ANATOMICAL BRAIN (profile-readable) ============
+     Built for the side view: flat-ish frontal lobe, high parietal crown,
+     occipital curve, temporal lobe bulge, deep horizontal Sylvian groove,
+     ridged cerebellum at lower-back, brainstem. Dense surface + gyri bands. */
   const brainPos = new Float32Array(N*3);
   (function brain() {
     let i = 0;
-    const cer = Math.floor(N*0.12), stem = Math.floor(N*0.03), main = N - cer - stem;
+    const cer = Math.floor(N*0.13), stem = Math.floor(N*0.035), main = N - cer - stem;
     for (let k=0;k<main;k++){
       const u=Math.random()*Math.PI*2, v=Math.acos(2*Math.random()-1);
-      const r=0.88+Math.pow(Math.random(),4)*0.12;
-      let x=r*Math.sin(v)*Math.cos(u)*1.85;
-      let y=r*Math.cos(v)*1.3;
-      let z=r*Math.sin(v)*Math.sin(u)*1.5;
-      // deep midline fissure
-      const gap = 0.22;
-      x += x>=0 ? gap : -gap;
-      if (Math.abs(x) < gap*1.4 && y > -0.2) { x = (x>=0?1:-1)*(gap*1.4); }
-      // cortical folds — layered noise
-      const w = Math.sin(x*4.8)*Math.cos(y*5.4)*Math.sin(z*5.0)*0.13
-              + Math.sin(x*9.5+1.3)*Math.cos(z*8.7)*0.05;
-      x+=w; y+=w*0.85; z+=w;
-      // frontal/occipital shaping
-      if (z>0.9) y -= (z-0.9)*0.25;
-      if (y<-0.75) y = -0.75-(y+0.75)*0.25;
-      brainPos[i*3]=x; brainPos[i*3+1]=y+0.28; brainPos[i*3+2]=z; i++;
+      const r=0.93+Math.pow(Math.random(),6)*0.07;        // strong surface bias
+      // base ellipsoid — z = front/back axis (profile faces camera after rotY)
+      let x=r*Math.sin(v)*Math.cos(u)*1.05;               // width (thin: profile)
+      let y=r*Math.cos(v)*1.18;                           // height
+      let z=r*Math.sin(v)*Math.sin(u)*1.62;               // length front-back
+      // anatomical shaping (z>0 = front)
+      if (z>0.95) { y -= (z-0.95)*0.55; z = 0.95 + (z-0.95)*0.7; }   // frontal lobe drop
+      if (z<-0.9) { y += (Math.abs(z)-0.9)*0.18; }                    // occipital lift
+      if (y>0.85) { z -= (y-0.85)*0.25; }                              // parietal crown back-slope
+      // temporal lobe bulge (lower-middle side)
+      if (y<-0.15 && y>-0.85 && z>-0.35 && z<0.75) { x*=1.22; z+=0.06; }
+      // Sylvian fissure — deep horizontal groove on the side
+      const syl = Math.exp(-Math.pow((y+0.12)/0.10,2)) * (z>-0.4&&z<0.7?1:0);
+      x *= (1 - syl*0.30);
+      // gyri — folds running mostly front-to-back (horizontal bands in profile)
+      const g1 = Math.sin(y*7.5 + z*2.0)*Math.cos(z*5.5)*0.085;
+      const g2 = Math.sin(y*14 + 2.1)*Math.sin(z*9.5)*0.038;
+      const w = g1+g2;
+      x += w*0.7; y += w; z += w*0.6;
+      // flat-ish base
+      if (y<-0.78 && z>-0.5) y = -0.78-(y+0.78)*0.2;
+      brainPos[i*3]=x; brainPos[i*3+1]=y+0.22; brainPos[i*3+2]=z; i++;
     }
-    // cerebellum — smaller ridged sphere lower-back
+    // cerebellum — ridged ball, lower-back, clearly separated
     for (let k=0;k<cer;k++){
       const u=Math.random()*Math.PI*2, v=Math.acos(2*Math.random()-1);
-      const r=0.92+Math.random()*0.08;
-      let x=r*Math.sin(v)*Math.cos(u)*0.78;
-      let y=r*Math.cos(v)*0.5;
-      let z=r*Math.sin(v)*Math.sin(u)*0.62;
-      y += Math.sin(x*16)*0.035; // fine horizontal ridges
-      brainPos[i*3]=x; brainPos[i*3+1]=y-0.72; brainPos[i*3+2]=z-1.05; i++;
+      const r=0.93+Math.pow(Math.random(),4)*0.07;
+      let x=r*Math.sin(v)*Math.cos(u)*0.55;
+      let y=r*Math.cos(v)*0.42;
+      let z=r*Math.sin(v)*Math.sin(u)*0.58;
+      y += Math.sin(z*22)*0.045;                       // fine horizontal striations
+      brainPos[i*3]=x; brainPos[i*3+1]=y-0.66; brainPos[i*3+2]=z-1.18; i++;
     }
-    // brainstem
+    // brainstem — angled column under cerebellum toward front
     for (let k=0;k<stem;k++){
-      const a=Math.random()*Math.PI*2, rr=0.16*Math.sqrt(Math.random());
-      brainPos[i*3]=Math.cos(a)*rr; brainPos[i*3+1]=-0.85-Math.random()*0.5; brainPos[i*3+2]=-0.45+Math.sin(a)*rr; i++;
+      const a=Math.random()*Math.PI*2, rr=0.14*Math.sqrt(Math.random()), h=Math.random();
+      brainPos[i*3]=Math.cos(a)*rr;
+      brainPos[i*3+1]=-0.78-h*0.55;
+      brainPos[i*3+2]=-0.55+Math.sin(a)*rr+h*0.22; i++;
     }
   })();
 
@@ -193,7 +202,7 @@
      5–9s   morph wave → brain (swirl transit) label: TRANSFORMING
      9–14s  brain (3/4 rotation, synapses)     label: INTELLIGENCE
      14–18s morph back                          loop */
-  const CH=5, MO=4, BR=5, MB=4, CYCLE=CH+MO+BR+MB;
+  const CH=4, MO=3, BR=5, MB=2.5, CYCLE=CH+MO+BR+MB;
   const ease = t => t<0 ? 0 : t>1 ? 1 : (t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2);
   let lastShape = 0;
   const labels = (label && label.dataset) ? {
@@ -285,7 +294,8 @@
        brain — 3/4 view, slow continuous turn */
     px+=(tx-px)*0.05; py+=(ty-py)*0.05;
     const chipRotX=0.45, chipRotY=Math.sin(t*0.4)*0.18;
-    const brainRotX=0.12, brainRotY=t*0.4;
+    // brain: hold a clear profile view (most recognizable), gentle sway only
+    const brainRotX=0.06, brainRotY=1.35 + Math.sin(t*0.35)*0.28;
     const rl = ease(gm);
     holoGroup.rotation.x = chipRotX*(1-rl)+brainRotX*rl + py;
     holoGroup.rotation.y = chipRotY*(1-rl)+brainRotY*rl + px;
