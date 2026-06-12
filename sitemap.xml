@@ -1,18 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://flash-ai.pro/index.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/llm.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/accords.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/security.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/legal.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/fr/index.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/fr/llm.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/fr/accords.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/fr/security.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/fr/legal.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/es/index.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/es/llm.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/es/accords.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/es/security.html</loc><changefreq>monthly</changefreq></url>
-  <url><loc>https://flash-ai.pro/es/legal.html</loc><changefreq>monthly</changefreq></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url><loc>https://flash-ai.pro/index.html</loc><lastmod>2026-06-12</lastmod><changefreq>monthly</changefreq><priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/index.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/index.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/index.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/index.html"/></url>
+  <url><loc>https://flash-ai.pro/llm.html</loc><lastmod>2026-06-12</lastmod><changefreq>monthly</changefreq><priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/llm.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/llm.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/llm.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/llm.html"/></url>
+  <url><loc>https://flash-ai.pro/accords.html</loc><lastmod>2026-06-12</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/accords.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/accords.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/accords.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/accords.html"/></url>
+  <url><loc>https://flash-ai.pro/security.html</loc><lastmod>2026-06-12</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/security.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/security.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/security.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/security.html"/></url>
+  <url><loc>https://flash-ai.pro/legal.html</loc><lastmod>2026-06-12</lastmod><changefreq>yearly</changefreq><priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/legal.html"/></url>
+  <url><loc>https://flash-ai.pro/fr/index.html</loc><lastmod>2026-06-12</lastmod><changefreq>monthly</changefreq><priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/index.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/index.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/index.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/index.html"/></url>
+  <url><loc>https://flash-ai.pro/fr/llm.html</loc><lastmod>2026-06-12</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/llm.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/llm.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/llm.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/llm.html"/></url>
+  <url><loc>https://flash-ai.pro/fr/accords.html</loc><lastmod>2026-06-12</lastmod><changefreq>monthly</changefreq><priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/accords.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/accords.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/accords.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/accords.html"/></url>
+  <url><loc>https://flash-ai.pro/fr/security.html</loc><lastmod>2026-06-12</lastmod><changefreq>monthly</changefreq><priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/security.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/security.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/security.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/security.html"/></url>
+  <url><loc>https://flash-ai.pro/fr/legal.html</loc><lastmod>2026-06-12</lastmod><changefreq>yearly</changefreq><priority>0.2</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/legal.html"/></url>
+  <url><loc>https://flash-ai.pro/es/index.html</loc><lastmod>2026-06-12</lastmod><changefreq>monthly</changefreq><priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/index.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/index.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/index.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/index.html"/></url>
+  <url><loc>https://flash-ai.pro/es/llm.html</loc><lastmod>2026-06-12</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/llm.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/llm.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/llm.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/llm.html"/></url>
+  <url><loc>https://flash-ai.pro/es/accords.html</loc><lastmod>2026-06-12</lastmod><changefreq>monthly</changefreq><priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/accords.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/accords.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/accords.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/accords.html"/></url>
+  <url><loc>https://flash-ai.pro/es/security.html</loc><lastmod>2026-06-12</lastmod><changefreq>monthly</changefreq><priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/security.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/security.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/security.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/security.html"/></url>
+  <url><loc>https://flash-ai.pro/es/legal.html</loc><lastmod>2026-06-12</lastmod><changefreq>yearly</changefreq><priority>0.2</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flash-ai.pro/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://flash-ai.pro/fr/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://flash-ai.pro/es/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flash-ai.pro/legal.html"/></url>
 </urlset>

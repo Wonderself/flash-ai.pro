@@ -343,6 +343,12 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--vio
   box-shadow:0 0 0 4px rgba(106,72,255,.14); background:#fff; }
 textarea { resize:vertical; min-height:110px; }
 .f-submit { width:100%; border:none; cursor:pointer; margin-top:8px; font-family:'Outfit',sans-serif; }
+.f-submit:disabled { opacity:.7; cursor:wait; }
+.hp { position:absolute; left:-9999px; width:1px; height:1px; opacity:0; pointer-events:none; }
+.form-result { margin-top:16px; padding:13px 16px; border-radius:12px; font-size:.9rem; font-weight:500;
+  border:1px solid var(--line); background:rgba(255,255,255,.6); color:var(--dim); }
+.form-result.ok  { border-color:rgba(12,201,155,.45); background:rgba(12,201,155,.10); color:#0A8F6E; }
+.form-result.err { border-color:rgba(255,107,138,.45); background:rgba(255,107,138,.10); color:#C03355; }
 
 /* footer */
 footer { border-top:1px solid var(--hair); padding:44px 0; background:var(--glass-dim); }

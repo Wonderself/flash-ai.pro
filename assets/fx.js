@@ -65,6 +65,44 @@
     setInterval(tick, 1700);
   }
 
+  /* ---------- contact form — AJAX submit, inline status, no page leave ---------- */
+  const form = document.querySelector('.form-wrap');
+  if (form) {
+    const lang = (document.documentElement.lang || 'en').slice(0, 2);
+    const T = {
+      en: { send: 'Sending…', ok: 'Thank you — your message is on its way. We’ll come back to you shortly.', err: 'Something went wrong. Please email contact@flash-ai.pro directly.' },
+      fr: { send: 'Envoi…',   ok: 'Merci — votre message part vers nous. Nous revenons vers vous très vite.', err: 'Une erreur est survenue. Écrivez-nous directement à contact@flash-ai.pro.' },
+      es: { send: 'Enviando…', ok: 'Gracias — su mensaje está en camino. Le responderemos en breve.', err: 'Algo salió mal. Escríbanos directamente a contact@flash-ai.pro.' }
+    }[lang] || null;
+    const m = T || { send: 'Sending…', ok: 'Thank you — your message is on its way.', err: 'Something went wrong. Please email contact@flash-ai.pro.' };
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = form.querySelector('.f-submit');
+      const res = form.querySelector('.form-result');
+      const data = Object.fromEntries(new FormData(form).entries());
+      const orig = btn.textContent;
+      btn.disabled = true; btn.textContent = m.send;
+      if (res) { res.hidden = false; res.className = 'form-result'; res.textContent = m.send; }
+      try {
+        const r = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok && j.success) {
+          form.reset();
+          if (res) { res.className = 'form-result ok'; res.textContent = m.ok; }
+        } else {
+          if (res) { res.className = 'form-result err'; res.textContent = m.err; }
+        }
+      } catch (err) {
+        if (res) { res.className = 'form-result err'; res.textContent = m.err; }
+      } finally {
+        btn.disabled = false; btn.textContent = orig;
+      }
+    });
+  }
+
   if (reduced) {
     $$('.rv').forEach(el => el.classList.add('in'));
     return; // everything below is motion sugar
