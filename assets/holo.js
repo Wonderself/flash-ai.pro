@@ -117,8 +117,9 @@
   geo.setAttribute('color', new THREE.BufferAttribute(colors,3));
   const holoGroup=new THREE.Group();
   const pSharp=new THREE.Points(geo,new THREE.PointsMaterial({map:dotTex,vertexColors:true,size:0.07,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false}));
-  const pHalo=new THREE.Points(geo,new THREE.PointsMaterial({map:dotTex,vertexColors:true,size:0.22,transparent:true,opacity:.12,blending:THREE.AdditiveBlending,depthWrite:false}));
-  holoGroup.add(pHalo,pSharp);
+  const pHalo=new THREE.Points(geo,new THREE.PointsMaterial({map:dotTex,vertexColors:true,size:0.24,transparent:true,opacity:.14,blending:THREE.AdditiveBlending,depthWrite:false}));
+  const pBloom=new THREE.Points(geo,new THREE.PointsMaterial({map:dotTex,vertexColors:true,size:0.62,transparent:true,opacity:.05,blending:THREE.AdditiveBlending,depthWrite:false})); // soft liquid-glass glow
+  holoGroup.add(pBloom,pHalo,pSharp);
 
   /* ===== EXPLICIT LINE SEGMENTS — this is what makes shapes readable ===== */
   const chipSegs=new Float32Array(L*6), brainSegs=new Float32Array(L*6);
@@ -293,7 +294,8 @@
     holoGroup.rotation.y=chipY*(1-rl)+brainY*rl+px;
 
     const flick=0.97+Math.sin(t*21)*0.012+(Math.random()<0.004?-0.1:0);
-    pSharp.material.opacity=0.95*flick; pHalo.material.opacity=0.12*flick;
+    pSharp.material.opacity=0.95*flick; pHalo.material.opacity=0.14*flick;
+    pBloom.material.opacity=(0.045+0.02*Math.sin(t*0.8))*flick;
     lines.material.opacity=(0.26+0.10*rl)*flick;  // lines brighter in brain phase
 
     renderer.render(scene,camera);
