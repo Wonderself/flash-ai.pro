@@ -1,7 +1,8 @@
-/* Flash-AI.pro — hologram v5 "Recognizable"
-   The brain is now drawn with LINES: a true profile silhouette, winding gyri folds,
-   cerebellum striations — rotating on itself. The chip is a crisp wireframe grid.
-   Both shapes share one morphing segment pool + particle cloud + rising sparkles. */
+/* Flash-AI.pro — hologram v8 "Triptych"
+   Three acts now: SILICON (chip) → INTELLIGENCE (brain) → GLOBAL NETWORK
+   (wireframe globe with city hubs + elevated great-circle arcs TLV·PAR·NYC·
+   BUE·DXB·MAD, orbital ring). One shared particle pool + segment pool morphs
+   through all three. Soft bloom layer for a liquid-glass glow. */
 (function () {
   const canvas = document.getElementById('holo');
   if (!canvas || !window.THREE) return;
@@ -36,14 +37,13 @@
     [-0.18,-1.00],[-0.06,-1.30],[ 0.12,-1.28],[ 0.16,-0.96],               /* brainstem */
     [ 0.34,-0.78],[ 0.78,-0.84],[ 1.14,-0.62],[ 1.36,-0.34]                /* temporal underside */
   ];
-  // densify outline (linear subdivision)
   const OUT = [];
   for (let i=0;i<CTRL.length;i++){
     const a=CTRL[i], b=CTRL[(i+1)%CTRL.length];
     for (let s=0;s<9;s++){ const f=s/9; OUT.push([a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f]); }
   }
   const NO = OUT.length;
-  function inside(z,y){ // ray cast
+  function inside(z,y){
     let c=false;
     for (let i=0,j=NO-1;i<NO;j=i++){
       const zi=OUT[i][0], yi=OUT[i][1], zj=OUT[j][0], yj=OUT[j][1];
@@ -65,9 +65,9 @@
     const w=W(z,y);
     let x;
     const r=Math.random();
-    if (r<surfBias) x=(Math.random()<0.5?-1:1)*w*(0.90+Math.random()*0.10);   // side surfaces
-    else if (r<surfBias+0.14){ const o=OUT[(Math.random()*NO)|0]; z=o[0]; y=o[1]; x=(Math.random()*2-1)*0.10; } // rim
-    else x=(Math.random()*2-1)*w*0.85;                                        // interior
+    if (r<surfBias) x=(Math.random()<0.5?-1:1)*w*(0.90+Math.random()*0.10);
+    else if (r<surfBias+0.14){ const o=OUT[(Math.random()*NO)|0]; z=o[0]; y=o[1]; x=(Math.random()*2-1)*0.10; }
+    else x=(Math.random()*2-1)*w*0.85;
     return [x,y+0.10,z];
   }
 
@@ -75,7 +75,7 @@
   const S=2.0, S2=1.22;
   function chipParticle(){
     const r=Math.random();
-    if (r<0.18){ // outer frame
+    if (r<0.18){
       const t=Math.random()*4, s=Math.floor(t), f=t-s;
       const e=[[ -S+2*S*f, S],[S, S-2*S*f],[ S-2*S*f,-S],[-S,-S+2*S*f]][s];
       return [e[0],e[1],0];
@@ -83,22 +83,45 @@
     if (r<0.30){ const t=Math.random()*4, s=Math.floor(t), f=t-s;
       const e=[[ -S2+2*S2*f, S2],[S2, S2-2*S2*f],[ S2-2*S2*f,-S2],[-S2,-S2+2*S2*f]][s];
       return [e[0],e[1],0.03]; }
-    if (r<0.66){ // bus lanes
+    if (r<0.66){
       const horiz=Math.random()>0.5, lane=(Math.floor(Math.random()*7)-3)*(S2/3.5);
       const t=(Math.random()*2-1)*S*0.97;
       return horiz?[t,lane,0.01]:[lane,t,0.02];
     }
-    if (r<0.82) return [(Math.random()-0.5)*0.8,(Math.random()-0.5)*0.8,0.05+Math.random()*0.1]; // core
+    if (r<0.82) return [(Math.random()-0.5)*0.8,(Math.random()-0.5)*0.8,0.05+Math.random()*0.1];
     const side=Math.floor(Math.random()*4), idx=Math.floor(Math.random()*12);
     const a=(idx/11*2-1)*S*0.86, ext=S+0.12+Math.random()*0.22;
     return side===0?[a,ext,0]:side===1?[a,-ext,0]:side===2?[ext,a,0]:[-ext,a,0];
   }
 
-  /* ===== particle clouds ===== */
-  const chipPos=new Float32Array(N*3), brainPos=new Float32Array(N*3);
+  /* ================= GLOBE GEOMETRY ================= */
+  const GR=1.78;
+  function ll(latDeg,lonDeg,R){
+    const la=latDeg*Math.PI/180, lo=lonDeg*Math.PI/180; R=R||GR;
+    return [R*Math.cos(la)*Math.cos(lo), R*Math.sin(la), R*Math.cos(la)*Math.sin(lo)];
+  }
+  /* hub cities — Tel Aviv & Paris first, then the corridors */
+  const CITIES=[[32.1,34.8],[48.85,2.35],[40.7,-74.0],[-34.6,-58.4],[25.2,55.3],[40.4,-3.7]];
+  const LATS=[-60,-40,-20,0,20,40,60];
+  function globeParticle(){
+    const r=Math.random();
+    if (r<0.13){ // glowing city clusters
+      const c=CITIES[(Math.random()*CITIES.length)|0];
+      return ll(c[0]+(Math.random()*6-3), c[1]+(Math.random()*6-3), GR*(1+Math.random()*0.05));
+    }
+    if (r<0.50){ const lat=LATS[(Math.random()*LATS.length)|0];
+      return ll(lat+(Math.random()*2-1), Math.random()*360); }
+    if (r<0.78){ const lon=((Math.random()*12)|0)*30;
+      return ll((Math.random()*2-1)*88, lon+(Math.random()*2-1)); }
+    return ll(Math.asin(Math.random()*2-1)*180/Math.PI, Math.random()*360);
+  }
+
+  /* ===== particle clouds (3 shapes) ===== */
+  const chipPos=new Float32Array(N*3), brainPos=new Float32Array(N*3), globePos=new Float32Array(N*3);
   for (let k=0;k<N;k++){
     const c=chipParticle(); chipPos[k*3]=c[0]; chipPos[k*3+1]=c[1]; chipPos[k*3+2]=c[2];
     const b=brainSample(0.74); brainPos[k*3]=b[0]; brainPos[k*3+1]=b[1]; brainPos[k*3+2]=b[2];
+    const g=globeParticle(); globePos[k*3]=g[0]; globePos[k*3+1]=g[1]; globePos[k*3+2]=g[2];
   }
   const delay=new Float32Array(N), swirl=new Float32Array(N);
   for (let k=0;k<N;k++){ delay[k]=(chipPos[k*3]+2.4)/4.8*0.5; swirl[k]=Math.random()*Math.PI*2; }
@@ -118,16 +141,18 @@
   const holoGroup=new THREE.Group();
   const pSharp=new THREE.Points(geo,new THREE.PointsMaterial({map:dotTex,vertexColors:true,size:0.07,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false}));
   const pHalo=new THREE.Points(geo,new THREE.PointsMaterial({map:dotTex,vertexColors:true,size:0.24,transparent:true,opacity:.14,blending:THREE.AdditiveBlending,depthWrite:false}));
-  const pBloom=new THREE.Points(geo,new THREE.PointsMaterial({map:dotTex,vertexColors:true,size:0.62,transparent:true,opacity:.05,blending:THREE.AdditiveBlending,depthWrite:false})); // soft liquid-glass glow
+  const pBloom=new THREE.Points(geo,new THREE.PointsMaterial({map:dotTex,vertexColors:true,size:0.62,transparent:true,opacity:.05,blending:THREE.AdditiveBlending,depthWrite:false}));
   holoGroup.add(pBloom,pHalo,pSharp);
 
-  /* ===== EXPLICIT LINE SEGMENTS — this is what makes shapes readable ===== */
-  const chipSegs=new Float32Array(L*6), brainSegs=new Float32Array(L*6);
-  let ci=0, bi=0;
+  /* ===== EXPLICIT LINE SEGMENTS — what makes each shape readable ===== */
+  const chipSegs=new Float32Array(L*6), brainSegs=new Float32Array(L*6), globeSegs=new Float32Array(L*6);
+  let ci=0, bi=0, gi=0;
   const cSeg=(x1,y1,z1,x2,y2,z2)=>{ if(ci<L){ const o=ci*6;
     chipSegs[o]=x1;chipSegs[o+1]=y1;chipSegs[o+2]=z1;chipSegs[o+3]=x2;chipSegs[o+4]=y2;chipSegs[o+5]=z2; ci++; } };
   const bSeg=(x1,y1,z1,x2,y2,z2)=>{ if(bi<L){ const o=bi*6;
     brainSegs[o]=x1;brainSegs[o+1]=y1;brainSegs[o+2]=z1;brainSegs[o+3]=x2;brainSegs[o+4]=y2;brainSegs[o+5]=z2; bi++; } };
+  const gSeg=(x1,y1,z1,x2,y2,z2)=>{ if(gi<L){ const o=gi*6;
+    globeSegs[o]=x1;globeSegs[o+1]=y1;globeSegs[o+2]=z1;globeSegs[o+3]=x2;globeSegs[o+4]=y2;globeSegs[o+5]=z2; gi++; } };
 
   // chip lines: frames, lanes, pins, core
   function frame(SS,zz,n){ const cs=[[-SS,SS,SS,SS],[SS,SS,SS,-SS],[SS,-SS,-SS,-SS],[-SS,-SS,-SS,SS]];
@@ -144,13 +169,12 @@
   while(ci<L){ const x=(Math.random()*2-1)*S2,y=(Math.random()*2-1)*S2;
     cSeg(x,y,0.01,x+(Math.random()-0.5)*0.3,y+(Math.random()-0.5)*0.3,0.01); }
 
-  // brain lines: silhouette rings (the key!), gyri strips, cerebellum striations, midline
+  // brain lines: silhouette rings, gyri strips, cerebellum striations, midline
   function ring(scale,xoff,step){
     for (let i=0;i<NO;i+=step){ const a=OUT[i], b=OUT[(i+step)%NO];
       bSeg(xoff, a[1]*scale+0.10, a[0]*scale, xoff, b[1]*scale+0.10, b[0]*scale); } }
-  ring(1.0, 0, 2);          // central silhouette — strongest cue
-  ring(0.94, 0.34, 4); ring(0.94,-0.34, 4);   // shell rings
-  // gyri: winding fold lines on both side surfaces
+  ring(1.0, 0, 2);
+  ring(0.94, 0.34, 4); ring(0.94,-0.34, 4);
   for (let g=0; g<18; g++){
     const side=(g%2===0)?1:-1;
     let z=-0.9+Math.random()*1.9, y=-0.4+Math.random()*1.3;
@@ -164,19 +188,51 @@
       z=nz; y=ny; ang+=Math.sin(s2*1.7+g)*0.45;
     }
   }
-  // cerebellum striations
   for (let r2=0;r2<7;r2++){ const yy=-0.62-r2*0.075;
     for (let s3=0;s3<5;s3++){ const z0=-1.22+s3*0.17, z1=z0+0.17;
       if(inside(z0,yy)&&inside(z1,yy)){ const ww=Math.min(0.30,W(z0,yy));
         bSeg(ww,yy+0.10,z0,ww,yy+0.10,z1); bSeg(-ww,yy+0.10,z0,-ww,yy+0.10,z1); } } }
-  // top midline (corpus callosum hint)
   for (let i=0;i<NO;i++){ const a=OUT[i]; if(a[1]>0.55){ const b=OUT[(i+2)%NO];
     if (b[1]>0.55) bSeg(0,a[1]+0.13,a[0]*0.97,0,b[1]+0.13,b[0]*0.97); } }
-  while(bi<L){ const p1=brainSample(0.9), p2=brainSample(0.9);
-    const d=Math.hypot(p1[0]-p2[0],p1[1]-p2[1],p1[2]-p2[2]);
-    if (d<0.4) bSeg(p1[0],p1[1],p1[2],p2[0],p2[1],p2[2]); else bi+=0; if(d>=0.4&&bi<L){/*skip*/} if(bi>=L)break; }
-  // safety fill
   while(bi<L){ const p1=brainSample(0.9); bSeg(p1[0],p1[1],p1[2],p1[0]+0.05,p1[1],p1[2]); }
+
+  // globe lines: latitude rings, meridians, then the elevated city arcs
+  for (const lat of LATS){
+    const n=lat===0?56:40;
+    for (let s=0;s<n;s++){
+      const a=ll(lat,s/n*360), b=ll(lat,(s+1)/n*360);
+      gSeg(a[0],a[1],a[2],b[0],b[1],b[2]);
+    }
+  }
+  for (let m=0;m<12;m++){
+    const lon=m*30, n=36;
+    for (let s=0;s<n;s++){
+      const a=ll(-88+s/n*176,lon), b=ll(-88+(s+1)/n*176,lon);
+      gSeg(a[0],a[1],a[2],b[0],b[1],b[2]);
+    }
+  }
+  function arcRoute(A,B){
+    const a=ll(A[0],A[1]), b=ll(B[0],B[1]), n=22;
+    let prev=null;
+    for (let s=0;s<=n;s++){
+      const t=s/n;
+      let x=a[0]+(b[0]-a[0])*t, y=a[1]+(b[1]-a[1])*t, z=a[2]+(b[2]-a[2])*t;
+      const d=Math.hypot(x,y,z)||1, R=GR*(1+0.24*Math.sin(Math.PI*t));
+      x=x/d*R; y=y/d*R; z=z/d*R;
+      if (prev) gSeg(prev[0],prev[1],prev[2],x,y,z);
+      prev=[x,y,z];
+    }
+  }
+  const TLV=CITIES[0], PAR=CITIES[1], NYC=CITIES[2], BUE=CITIES[3], DXB=CITIES[4], MAD=CITIES[5];
+  [[TLV,PAR],[TLV,NYC],[PAR,NYC],[TLV,BUE],[TLV,DXB],[PAR,MAD],[BUE,MAD]].forEach(r=>arcRoute(r[0],r[1]));
+  while(gi<L){ // surface shimmer
+    const lat=Math.asin(Math.random()*2-1)*180/Math.PI, lon=Math.random()*360;
+    const a=ll(lat,lon), b=ll(lat+(Math.random()*8-4),lon+(Math.random()*8-4));
+    gSeg(a[0],a[1],a[2],b[0],b[1],b[2]);
+  }
+
+  const shapePos=[chipPos,brainPos,globePos];
+  const shapeSegs=[chipSegs,brainSegs,globeSegs];
 
   const linePos=new Float32Array(L*6);
   linePos.set(chipSegs);
@@ -195,7 +251,18 @@
   const pl=new Int32Array(P), pt=new Float32Array(P), pv=new Float32Array(P);
   for (let k=0;k<P;k++){ pl[k]=(Math.random()*L)|0; pt[k]=Math.random(); pv[k]=0.6+Math.random()*1.6; }
 
-  /* ===== rising sparkles — the magic dust (world-space, not rotating) ===== */
+  /* ===== orbital ring — fades in for the globe act ===== */
+  const RNG=130, ringPos=new Float32Array(RNG*3);
+  for (let k=0;k<RNG;k++){
+    const a=k/RNG*Math.PI*2;
+    ringPos[k*3]=Math.cos(a)*2.55; ringPos[k*3+1]=Math.cos(a)*0.55; ringPos[k*3+2]=Math.sin(a)*2.55;
+  }
+  const ringGeo=new THREE.BufferGeometry();
+  ringGeo.setAttribute('position', new THREE.BufferAttribute(ringPos,3));
+  const ringMat=new THREE.PointsMaterial({map:dotTex,color:0x5CFFC9,size:0.05,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+  holoGroup.add(new THREE.Points(ringGeo,ringMat));
+
+  /* ===== rising sparkles — world-space, not rotating ===== */
   const sGeo=new THREE.BufferGeometry();
   const sPos=new Float32Array(SP*3), sCol=new Float32Array(SP*3);
   const sVel=new Float32Array(SP), sPh=new Float32Array(SP), sFr=new Float32Array(SP), sBase=[];
@@ -214,11 +281,24 @@
 
   scene.add(holoGroup);
 
-  /* ===== timeline — fast & fluid =====
-     chip 2.4s → morph 1.8s → brain 3.4s (full self-rotation) → back 1.4s  (~9s loop) */
-  const CH=2.4, MO=1.8, BR=3.4, MB=1.4, CYCLE=CH+MO+BR+MB;
+  /* ===== timeline — three acts (~12.6s loop) =====
+     chip 2.2 → morph 1.5 → brain 2.8 → morph 1.5 → globe 3.2 → morph 1.4 */
+  const SEQ=[
+    {d:2.2, a:0, b:1, g:0,  ph:'chip'},
+    {d:1.5, a:0, b:1, g:-1, ph:'morph'},
+    {d:2.8, a:0, b:1, g:1,  ph:'brain'},
+    {d:1.5, a:1, b:2, g:-1, ph:'morph'},
+    {d:3.2, a:1, b:2, g:1,  ph:'globe'},
+    {d:1.4, a:2, b:0, g:-1, ph:'morph'}
+  ];
+  const CYCLE=SEQ.reduce((s,x)=>s+x.d,0);
   const ease=t=>t<0?0:t>1?1:(t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2);
-  const labels=(label&&label.dataset)?{chip:label.dataset.chip||'SILICON',morph:label.dataset.morph||'TRANSFORMING',brain:label.dataset.brain||'INTELLIGENCE'}:null;
+  const labels=(label&&label.dataset)?{
+    chip:label.dataset.chip||'SILICON',
+    morph:label.dataset.morph||'TRANSFORMING',
+    brain:label.dataset.brain||'INTELLIGENCE',
+    globe:label.dataset.globe||'GLOBAL NETWORK'
+  }:null;
   let lastLabel='';
   function setLabel(txt){ if(label&&txt!==lastLabel){ label.style.opacity=0;
     setTimeout(()=>{label.textContent=txt;label.style.opacity=1;},250); lastLabel=txt; } }
@@ -235,32 +315,41 @@
     }
   }
 
+  // per-shape resting rotations (x tilt, y spin)
+  function rotFor(s,t){
+    if (s===0) return [0.5, Math.sin(t*0.5)*0.15];          // chip faces viewer
+    if (s===1) return [0.10, t*0.85];                        // brain spins on itself
+    return [0.24, t*0.5+2.0];                                // globe, slower stately spin
+  }
+
   const t0=performance.now();
   function frame2(now){
     resize();
-    const t=(now-t0)/1000, c=t%CYCLE;
-    let gm, phase;
-    if (c<CH){gm=0;phase='chip';}
-    else if(c<CH+MO){gm=(c-CH)/MO;phase='morph';}
-    else if(c<CH+MO+BR){gm=1;phase='brain';}
-    else {gm=1-(c-CH-MO-BR)/MB;phase='morph';}
-    if (labels) setLabel(phase==='chip'?labels.chip:phase==='brain'?labels.brain:labels.morph);
+    const t=(now-t0)/1000;
+    let cc=t%CYCLE, ai=0, bi2=1, gm=0, phase='chip';
+    for (const Sq of SEQ){
+      if (cc<Sq.d){ ai=Sq.a; bi2=Sq.b; gm=Sq.g<0?cc/Sq.d:Sq.g; phase=Sq.ph; break; }
+      cc-=Sq.d;
+    }
+    if (labels) setLabel(labels[phase==='morph'?'morph':phase]);
 
+    const A=shapePos[ai], B=shapePos[bi2];
+    const SA=shapeSegs[ai], SB=shapeSegs[bi2];
     const breathe=1+Math.sin(t*1.1)*0.012;
     for (let k=0;k<N;k++){
       const i3=k*3;
       let m=ease(gm*1.4-delay[k]*0.6);
       const arc=Math.sin(Math.PI*Math.min(1,Math.max(0,m)))*(phase==='morph'?1:0);
       const sa=swirl[k]+t*0.9;
-      pos[i3]  =(chipPos[i3]  *(1-m)+brainPos[i3]  *m+Math.cos(sa)*arc*0.45)*breathe;
-      pos[i3+1]=(chipPos[i3+1]*(1-m)+brainPos[i3+1]*m+Math.sin(sa*1.3)*arc*0.3)*breathe;
-      pos[i3+2]=(chipPos[i3+2]*(1-m)+brainPos[i3+2]*m+Math.sin(sa)*arc*0.45)*breathe;
+      pos[i3]  =(A[i3]  *(1-m)+B[i3]  *m+Math.cos(sa)*arc*0.45)*breathe;
+      pos[i3+1]=(A[i3+1]*(1-m)+B[i3+1]*m+Math.sin(sa*1.3)*arc*0.3)*breathe;
+      pos[i3+2]=(A[i3+2]*(1-m)+B[i3+2]*m+Math.sin(sa)*arc*0.45)*breathe;
     }
     geo.attributes.position.needsUpdate=true;
 
     for (let k=0;k<L;k++){
       const o=k*6, m=ease(gm*1.4-segDelay[k]*0.6);
-      for (let j=0;j<6;j++) linePos[o+j]=(chipSegs[o+j]*(1-m)+brainSegs[o+j]*m)*breathe;
+      for (let j=0;j<6;j++) linePos[o+j]=(SA[o+j]*(1-m)+SB[o+j]*m)*breathe;
     }
     lGeo.attributes.position.needsUpdate=true;
 
@@ -274,7 +363,6 @@
     }
     pulseGeo.attributes.position.needsUpdate=true;
 
-    // rising sparkles + twinkle
     for (let k=0;k<SP;k++){
       sPos[k*3+1]+=sVel[k]*0.016;
       if(sPos[k*3+1]>3.4){ sPos[k*3+1]=-3.4; sPos[k*3]=(Math.random()*2-1)*3.0; sPos[k*3+2]=(Math.random()*2-1)*2.2; }
@@ -285,18 +373,22 @@
     sGeo.attributes.position.needsUpdate=true;
     sGeo.attributes.color.needsUpdate=true;
 
-    // rotation: chip faces viewer; brain SPINS on itself continuously
+    // rotation blends between the two active shapes
     px+=(tx-px)*0.06; py+=(ty-py)*0.06;
     const rl=ease(gm);
-    const chipX=0.5, chipY=Math.sin(t*0.5)*0.15;
-    const brainX=0.10, brainY=t*0.85;             // full self-rotation
-    holoGroup.rotation.x=chipX*(1-rl)+brainX*rl+py;
-    holoGroup.rotation.y=chipY*(1-rl)+brainY*rl+px;
+    const ra=rotFor(ai,t), rb=rotFor(bi2,t);
+    holoGroup.rotation.x=ra[0]*(1-rl)+rb[0]*rl+py;
+    holoGroup.rotation.y=ra[1]*(1-rl)+rb[1]*rl+px;
+
+    // globe weight drives the orbital ring
+    let wG=0; if(ai===2)wG+=(1-gm); if(bi2===2)wG+=gm;
 
     const flick=0.97+Math.sin(t*21)*0.012+(Math.random()<0.004?-0.1:0);
     pSharp.material.opacity=0.95*flick; pHalo.material.opacity=0.14*flick;
     pBloom.material.opacity=(0.045+0.02*Math.sin(t*0.8))*flick;
-    lines.material.opacity=(0.26+0.10*rl)*flick;  // lines brighter in brain phase
+    const lineBoost=(phase==='brain'||phase==='globe')?0.10:(phase==='morph'?0.05:0);
+    lines.material.opacity=(0.26+lineBoost)*flick;
+    ringMat.opacity=0.55*wG*flick;
 
     renderer.render(scene,camera);
     if(!reduced) requestAnimationFrame(frame2);
@@ -311,6 +403,4 @@
   } else requestAnimationFrame(frame2);
 
   window.addEventListener('resize',resize);
-  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.1});
-  document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 })();
