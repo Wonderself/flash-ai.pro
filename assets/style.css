@@ -352,6 +352,56 @@ footer { border-top:1px solid var(--hair); padding:44px 0; background:var(--glas
 .foot-links a { color:var(--dim); text-decoration:none; font-size:.84rem; font-weight:500; transition:color .2s; }
 .foot-links a:hover { color:var(--violet); }
 
+/* ===== lifecycle visual — two rotating wheels, steps lighting one by one ===== */
+.lifecycle-wrap { max-width:980px; margin:0 auto 64px; border-radius:26px; padding:34px 30px 26px;
+  background:radial-gradient(70% 50% at 50% 0%, rgba(106,72,255,.16), transparent 70%), var(--stage);
+  box-shadow:0 30px 70px rgba(10,16,46,.30), 0 1px 0 rgba(255,255,255,.06) inset;
+  position:relative; overflow:hidden; }
+.lifecycle-wrap::before { content:''; position:absolute; inset:0; border-radius:26px; padding:1.5px;
+  background:linear-gradient(140deg, rgba(106,72,255,.7), rgba(54,214,255,.2) 45%, rgba(12,201,155,.7));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; }
+.lc-head { display:flex; justify-content:space-between; align-items:flex-end; gap:18px;
+  margin-bottom:20px; flex-wrap:wrap; }
+.lc-head h3 { font-family:'Unbounded',sans-serif; font-weight:400; font-size:1.12rem; color:#fff; line-height:1.3; }
+.lc-head p { color:#8E96B8; font-size:.85rem; margin-top:7px; max-width:52ch; }
+.lc-now { font-family:'JetBrains Mono',monospace; font-size:.66rem; letter-spacing:.16em;
+  color:#8E96B8; display:flex; gap:14px; align-items:baseline; white-space:nowrap; }
+.lc-now b { color:#5CFFC9; font-weight:500; font-size:.78rem; letter-spacing:.22em; text-transform:uppercase;
+  text-shadow:0 0 14px rgba(92,255,201,.5); transition:opacity .3s; }
+#lifecycle { width:100%; height:auto; display:block; }
+#lifecycle text { user-select:none; }
+#lifecycle .lc-center { font-family:'Unbounded',sans-serif; font-size:15px; fill:#fff; letter-spacing:.04em; }
+#lifecycle .lc-centersub { font-family:'Outfit',sans-serif; font-size:9.5px; fill:#8E96B8; }
+#lifecycle .spin { animation:lcspin 30s linear infinite; }
+@keyframes lcspin { to { transform:rotate(360deg); } }
+#lifecycle .ring-dash { opacity:.4; }
+#lifecycle .arr { fill:#7FD8FF; opacity:.75; }
+#lifecycle .ring-glow { opacity:.09; transition:opacity .7s; }
+#lifecycle .ring-main { opacity:.5; transition:opacity .7s; }
+#lifecycle .wheel.live .ring-glow { opacity:.22; }
+#lifecycle .wheel.live .ring-main { opacity:1; }
+#lifecycle .st .halo { opacity:0; transition:opacity .5s; }
+#lifecycle .st .dot { transition:transform .5s cubic-bezier(.2,.8,.2,1), fill .5s;
+  transform-box:fill-box; transform-origin:center; }
+#lifecycle .st .num { font-family:'JetBrains Mono',monospace; font-size:9.5px; fill:#5A6690;
+  letter-spacing:.08em; transition:fill .5s; }
+#lifecycle .st .lbl { font-family:'Outfit',sans-serif; font-size:13.5px; font-weight:600;
+  fill:#8E96B8; transition:fill .5s, font-size .5s; }
+#lifecycle .st.on .halo { opacity:.16; }
+#lifecycle .st.on .dot { transform:scale(1.75); fill:#fff; }
+#lifecycle .st.on .num { fill:#9F86FF; }
+#lifecycle .st.on .lbl { fill:#fff; }
+#lifecycle .flow { stroke-dasharray:5 9; animation:lcflow 1.1s linear infinite;
+  opacity:.45; transition:opacity .5s, filter .5s; }
+#lifecycle .flow.hot { opacity:1; filter:drop-shadow(0 0 6px rgba(92,255,201,.8)); }
+@keyframes lcflow { to { stroke-dashoffset:-14; } }
+#lifecycle .core-t { font-family:'JetBrains Mono',monospace; font-size:8.5px; letter-spacing:.18em; fill:#C8D0F0; }
+#lifecycle .row-n { font-family:'Outfit',sans-serif; font-size:11px; font-weight:600; fill:#E8ECFF; }
+#lifecycle .row-t { font-family:'Outfit',sans-serif; font-size:9.5px; fill:#8E96B8; }
+#lifecycle .bar-text { font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:1.5px; fill:#C8D0F0; }
+@media (max-width:640px){ .lifecycle-wrap { padding:24px 14px 18px; } .lc-now { display:none; } }
+
 /* ===== reveal (cascade, blur-in) — uses `translate` so `transform` stays free for tilt ===== */
 .rv { opacity:0; translate:0 26px; filter:blur(8px);
   transition:opacity .8s cubic-bezier(.16,1,.3,1), translate .8s cubic-bezier(.16,1,.3,1), filter .8s ease;
@@ -397,7 +447,8 @@ body.page-leave { opacity:0; transition:opacity .24s ease; }
 @media (prefers-reduced-motion: reduce) {
   .rv { opacity:1; translate:none; filter:none; transition:none; }
   body { animation:none; }
-  body::before, .orb, .grad-text, .btn-grad, .holo-stage, .mq-track { animation:none !important; }
+  body::before, .orb, .grad-text, .btn-grad, .holo-stage, .mq-track,
+  #lifecycle .spin, #lifecycle .flow { animation:none !important; }
   html { scroll-behavior:auto; }
   h1.kinetic .w { transform:none !important; opacity:1 !important; filter:none !important; }
 }

@@ -38,6 +38,33 @@
     const i = groups.get(p); groups.set(p, i + 1);
     el.style.setProperty('--rvd', Math.min(i * 90, 360) + 'ms');
   });
+  /* ---------- lifecycle sequencer — steps light up one by one ---------- */
+  const lc = document.getElementById('lifecycle');
+  if (lc) {
+    const sts = $$('.st', lc);
+    const wheels = $$('.wheel', lc);
+    const stepEl = document.getElementById('lcStep');
+    const nEl = document.getElementById('lcN');
+    const aTop = $('.flowTop', lc), aBot = $('.flowBot', lc);
+    const firstOp = sts.findIndex(s => s.closest('.wheel') !== sts[0].closest('.wheel'));
+    let li = 0;
+    const tick = () => {
+      sts.forEach((s, j) => s.classList.toggle('on', j === li));
+      const w = sts[li].closest('.wheel');
+      wheels.forEach(x => x.classList.toggle('live', x === w));
+      if (stepEl) {
+        stepEl.style.opacity = 0;
+        setTimeout(() => { stepEl.textContent = sts[li].dataset.name || ''; stepEl.style.opacity = 1; }, 160);
+      }
+      if (nEl) nEl.textContent = String(li + 1).padStart(2, '0') + ' / ' + String(sts.length).padStart(2, '0');
+      if (aTop) aTop.classList.toggle('hot', li === firstOp);   // build → operate handoff
+      if (aBot) aBot.classList.toggle('hot', li === 0);          // feedback loop closes
+      li = (li + 1) % sts.length;
+    };
+    tick();
+    setInterval(tick, 1700);
+  }
+
   if (reduced) {
     $$('.rv').forEach(el => el.classList.add('in'));
     return; // everything below is motion sugar

@@ -10,6 +10,7 @@
   const label = document.querySelector('.holo-label');
 
   const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x060A1C, 0.075); // depth falloff — far side melts into the dark
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
   camera.position.set(0, 0.1, 7.0);
   const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true });
@@ -281,6 +282,53 @@
 
   scene.add(holoGroup);
 
+  /* ===== nebula veils — drifting colour clouds behind the shape ===== */
+  function nebulaTex(col){
+    const c=document.createElement('canvas'); c.width=c.height=128;
+    const x=c.getContext('2d');
+    const g=x.createRadialGradient(64,64,0,64,64,64);
+    g.addColorStop(0,col); g.addColorStop(1,'rgba(0,0,0,0)');
+    x.fillStyle=g; x.fillRect(0,0,128,128);
+    return new THREE.CanvasTexture(c);
+  }
+  const nebs=[];
+  [['rgba(106,72,255,.85)',-1.9, 1.3,-2.6, 7.5, .13],
+   ['rgba(54,214,255,.8)',  2.2,-0.9,-3.0, 8.5, .10],
+   ['rgba(12,201,155,.8)',  0.2,-2.3,-2.2, 6.0, .08]].forEach(n=>{
+    const m=new THREE.SpriteMaterial({map:nebulaTex(n[0]),transparent:true,opacity:n[5],blending:THREE.AdditiveBlending,depthWrite:false});
+    const s=new THREE.Sprite(m);
+    s.position.set(n[1],n[2],n[3]); s.scale.setScalar(n[4]);
+    s.userData={bx:n[1],by:n[2],ph:Math.random()*6,o:n[5]};
+    scene.add(s); nebs.push(s);
+  });
+
+  /* ===== holographic floor grid — fades into the fog ===== */
+  const gridPts=[];
+  for (let x=-3;x<=3.01;x+=0.6) gridPts.push(x,-2.5,-2.2,x,-2.5,2.2);
+  for (let z=-2.2;z<=2.21;z+=0.55) gridPts.push(-3,-2.5,z,3,-2.5,z);
+  const gridGeo=new THREE.BufferGeometry();
+  gridGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(gridPts),3));
+  const gridMat=new THREE.LineBasicMaterial({color:0x5566D8,transparent:true,opacity:.13,blending:THREE.AdditiveBlending,depthWrite:false});
+  scene.add(new THREE.LineSegments(gridGeo,gridMat));
+
+  /* ===== occasional meteor streaking behind ===== */
+  const MT=14, mtPos=new Float32Array(MT*3), mtCol=new Float32Array(MT*3);
+  for (let k=0;k<MT;k++){ const fade=1-k/MT;
+    mtCol[k*3]=fade; mtCol[k*3+1]=fade*0.97; mtCol[k*3+2]=Math.min(1,fade*1.2); }
+  const mtGeo=new THREE.BufferGeometry();
+  mtGeo.setAttribute('position', new THREE.BufferAttribute(mtPos,3));
+  mtGeo.setAttribute('color', new THREE.BufferAttribute(mtCol,3));
+  const mtMat=new THREE.PointsMaterial({map:dotTex,vertexColors:true,size:0.09,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+  scene.add(new THREE.Points(mtGeo,mtMat));
+  let mtLife=0, mtDur=2.2, mtNext=3+Math.random()*4;
+  const mtP={x:0,y:0,z:-1.8}, mtV={x:0,y:0};
+
+  /* ===== per-act colour grading ===== */
+  const TINTS=[new THREE.Color(0.82,0.97,1.25),  // silicon: cool electric blue
+               new THREE.Color(1.18,0.93,1.25),  // intelligence: warm violet
+               new THREE.Color(0.85,1.20,1.05)]; // network: minted
+  const tintCur=new THREE.Color();
+
   /* ===== timeline — three acts (~12.6s loop) =====
      chip 2.2 → morph 1.5 → brain 2.8 → morph 1.5 → globe 3.2 → morph 1.4 */
   const SEQ=[
@@ -373,12 +421,50 @@
     sGeo.attributes.position.needsUpdate=true;
     sGeo.attributes.color.needsUpdate=true;
 
+    // nebula drift
+    for (const nb of nebs){
+      nb.position.x=nb.userData.bx+Math.sin(t*0.13+nb.userData.ph)*0.5;
+      nb.position.y=nb.userData.by+Math.cos(t*0.10+nb.userData.ph)*0.35;
+      nb.material.opacity=nb.userData.o*(0.8+0.2*Math.sin(t*0.4+nb.userData.ph));
+    }
+
+    // meteor lifecycle
+    if (mtLife<=0 && t>mtNext){
+      const dir=Math.random()<0.5?1:-1;
+      mtP.x=-dir*4.2; mtP.y=1.2+Math.random()*1.8; mtP.z=-1.4-Math.random()*1.2;
+      mtV.x=dir*(3.0+Math.random()); mtV.y=-(0.7+Math.random()*0.9);
+      mtLife=mtDur;
+    }
+    if (mtLife>0){
+      mtLife-=0.016;
+      mtP.x+=mtV.x*0.016; mtP.y+=mtV.y*0.016;
+      const vl=Math.hypot(mtV.x,mtV.y)||1, ux=mtV.x/vl, uy=mtV.y/vl;
+      for (let k=0;k<MT;k++){
+        mtPos[k*3]=mtP.x-ux*k*0.11; mtPos[k*3+1]=mtP.y-uy*k*0.11; mtPos[k*3+2]=mtP.z;
+      }
+      mtGeo.attributes.position.needsUpdate=true;
+      mtMat.opacity=Math.sin(Math.PI*(1-mtLife/mtDur))*0.9;
+      if (mtLife<=0){ mtMat.opacity=0; mtNext=t+5+Math.random()*7; }
+    }
+
     // rotation blends between the two active shapes
     px+=(tx-px)*0.06; py+=(ty-py)*0.06;
     const rl=ease(gm);
     const ra=rotFor(ai,t), rb=rotFor(bi2,t);
     holoGroup.rotation.x=ra[0]*(1-rl)+rb[0]*rl+py;
     holoGroup.rotation.y=ra[1]*(1-rl)+rb[1]*rl+px;
+
+    // colour grading per act
+    tintCur.copy(TINTS[ai]).lerp(TINTS[bi2],rl);
+    pSharp.material.color.copy(tintCur);
+    pHalo.material.color.copy(tintCur);
+    pBloom.material.color.copy(tintCur);
+
+    // cinematic camera breathing
+    camera.position.z=7.0+Math.sin(t*0.33)*0.18;
+    camera.position.x=Math.sin(t*0.17)*0.12;
+    camera.position.y=0.1+Math.sin(t*0.23)*0.07;
+    camera.lookAt(0,0,0);
 
     // globe weight drives the orbital ring
     let wG=0; if(ai===2)wG+=(1-gm); if(bi2===2)wG+=gm;
