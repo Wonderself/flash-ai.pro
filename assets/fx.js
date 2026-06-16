@@ -70,11 +70,11 @@
   if (form) {
     const lang = (document.documentElement.lang || 'en').slice(0, 2);
     const T = {
-      en: { send: 'Sending…', ok: 'Thank you — your message is on its way. We’ll come back to you shortly.', err: 'Something went wrong. Please email contact@flash-ai.pro directly.' },
-      fr: { send: 'Envoi…',   ok: 'Merci — votre message part vers nous. Nous revenons vers vous très vite.', err: 'Une erreur est survenue. Écrivez-nous directement à contact@flash-ai.pro.' },
-      es: { send: 'Enviando…', ok: 'Gracias — su mensaje está en camino. Le responderemos en breve.', err: 'Algo salió mal. Escríbanos directamente a contact@flash-ai.pro.' }
+      en: { send: 'Sending…', ok: 'Thank you — your message is on its way. We’ll come back to you shortly.', err: 'Something went wrong. Please try again in a moment.' },
+      fr: { send: 'Envoi…',   ok: 'Merci — votre message part vers nous. Nous revenons vers vous très vite.', err: 'Une erreur est survenue. Merci de réessayer dans un instant.' },
+      es: { send: 'Enviando…', ok: 'Gracias — su mensaje está en camino. Le responderemos en breve.', err: 'Algo salió mal. Inténtelo de nuevo en un momento.' }
     }[lang] || null;
-    const m = T || { send: 'Sending…', ok: 'Thank you — your message is on its way.', err: 'Something went wrong. Please email contact@flash-ai.pro.' };
+    const m = T || { send: 'Sending…', ok: 'Thank you — your message is on its way.', err: 'Something went wrong. Please try again in a moment.' };
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const btn = form.querySelector('.f-submit');
